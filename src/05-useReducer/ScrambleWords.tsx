@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { SkipForward, Play } from 'lucide-react';
+import confetti from 'canvas-confetti'
 
 const GAME_WORDS = [
   'REACT',
@@ -56,19 +57,56 @@ export const ScrambleWords = () => {
     // Previene el refresh de la página
     e.preventDefault();
     // Implementar lógica de juego
-    console.log('Intento de adivinanza:', guess, currentWord);
+
+    if( guess === currentWord ) {
+        const newWords = words.slice(1)
+        
+        confetti({
+            particleCount: 100,
+            spread: 120,
+            origin: { y: 0.6},
+        })
+
+        setPoints( points + 1 )
+        setGuess('')
+        setWords(newWords)
+        setCurrentWord(newWords[0])
+        setScrambledWord( scrambleWord(newWords[0]) )
+        return;
+    }
+
+    setErrorCounter( errorCounter + 1 )
+    setGuess('')
+
+    if( errorCounter + 1 >= maxAllowErrors ){
+        setIsGameOver(true)
+    }
 
   };
 
   const handleSkip = () => {
-    console.log('Palabra saltada');
+    if( skipCounter >= maxSkips) return;
 
+    const updateWords = words.splice(1)
     
+    setSkipCounter( skipCounter + 1)
+    setWords(updateWords)
+    setCurrentWord(updateWords[0])
+    setScrambledWord( scrambleWord(updateWords[0]))
+    setGuess('')
   };
 
   const handlePlayAgain = () => {
-    console.log('Jugar de nuevo');
-    
+    const newArray = shuffleArray(GAME_WORDS)
+
+    setPoints(0)
+    setErrorCounter(0)
+    setGuess('')
+    setWords( newArray )
+    setCurrentWord(newArray[0])
+    setIsGameOver(false)
+    setSkipCounter(0)
+    setScrambledWord( scrambleWord(newArray[0]) )
   };
 
   //! Si ya no hay palabras para jugar, se muestra el mensaje de fin de juego
