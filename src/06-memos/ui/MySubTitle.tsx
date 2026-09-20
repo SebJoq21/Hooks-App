@@ -1,8 +1,11 @@
+import { memo } from "react"
+
 interface Props {
-    subTitle: string
+    subTitle: string,
+    callMyAPI: () => void
 }
 
-export const MySubTitle = ( {subTitle}: Props) => {
+export const MySubTitle = memo( ( {subTitle, callMyAPI}: Props) => {
 
   console.log('MySubTitle re-render')
 
@@ -10,7 +13,11 @@ export const MySubTitle = ( {subTitle}: Props) => {
     <>
         <h6 className="text-2xl">{subTitle}</h6>
 
-        <button className="bg-indigo-500 text-white px-2 py-1 rounded-md cursor-pointer">Llamar funcion</button>
+        <button className="bg-indigo-500 text-white px-2 py-1 rounded-md cursor-pointer"
+          onClick={callMyAPI}
+        >
+          Llamar funcion
+        </button>
     </>
   )
-}
+})
