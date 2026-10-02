@@ -1,12 +1,13 @@
-import { createContext, useState, type PropsWithChildren } from "react"
-import type { User } from "../data/user-mock.data"
+import { createContext, useEffect, useState, type PropsWithChildren } from "react"
+import { users, type User } from "../data/user-mock.data"
 
 type authStatus = 'checking' | 'authenticated' | 'not-authenticated' 
 
 interface UserContextProps {
     // state
     authStatus: authStatus,
-    user: User | null
+    user: User | null,
+    isAuthenticated: boolean,
 
     // methods
     login: (userID: number) => boolean, // Espera retornar un booleano
@@ -24,23 +25,49 @@ export const UserProvider = ({children}: PropsWithChildren) => {
 
   // Se ajusta para que retorne un boolean como pide la interfaz
   const handleLogin = (userId: number) => {
-    console.log({userId})
-    return true; 
+    
+    const user = users.find(user => user.id === userId)
+    if( !user ) {
+      console.log(`User not found ${userId}`)
+      setUser(null)
+      setAuthStatus('not-authenticated')
+      return false
+    }
+
+    setUser(user)
+    setAuthStatus('authenticated')
+    localStorage.setItem('userId', userId.toString())
+    return true 
   }
   
   // Se ajusta para que no reciba argumentos, coincidiendo con la interfaz
   const handleLogout = () => {
-    console.log('logout')
+    setAuthStatus('not-authenticated')
+    setUser(null)
+    localStorage.removeItem('userId')
   }
 
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('userId')
+    
+    if( storedUserId ){
+      handleLogin(+storedUserId)
+      return
+    }
+
+    handleLogout()
+  }, [])
+
   return (
-    <UserContext.Provider value={{
+    <UserContext value={{
             authStatus: authStatus,
             user: user,
+            isAuthenticated: authStatus === 'authenticated',
+             
             login: handleLogin,
             logout: handleLogout
         }}>
         {children}
-    </UserContext.Provider>
+    </UserContext>
   )
 }
